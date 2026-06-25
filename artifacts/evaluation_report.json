@@ -1,0 +1,31 @@
+{
+  "macro_f1": 1.0,
+  "accuracy": 1.0,
+  "genres": [
+    "Action",
+    "Adventure",
+    "Comedy",
+    "Crime",
+    "Drama",
+    "Fantasy",
+    "Horror",
+    "Romance",
+    "Sci-Fi",
+    "Thriller"
+  ],
+  "n_samples": 1776,
+  "n_train": 1420,
+  "n_test": 356,
+  "per_genre": {
+    "Action": 1.0,
+    "Adventure": 1.0,
+    "Comedy": 1.0,
+    "Crime": 1.0,
+    "Drama": 1.0,
+    "Fantasy": 1.0,
+    "Horror": 1.0,
+    "Romance": 1.0,
+    "Sci-Fi": 1.0,
+    "Thriller": 1.0
+  }
+}

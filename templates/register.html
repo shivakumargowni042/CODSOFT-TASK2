@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MovieMind · Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      font-family:'Poppins',system-ui,sans-serif;
+      background:linear-gradient(135deg,#f5f0ff 0%,#fce7f3 33%,#fff7ed 66%,#fffbeb 100%);
+      padding:20px 0;
+    }
+    .card{
+      width:min(460px,calc(100vw - 32px));
+      background:rgba(255,255,255,.85);backdrop-filter:blur(12px);
+      border:1px solid rgba(124,58,237,.14);border-radius:24px;
+      box-shadow:0 24px 60px rgba(124,58,237,.18);padding:40px 36px;
+    }
+    .logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+    .logoMark{
+      width:40px;height:40px;border-radius:14px;flex:0 0 auto;
+      background:linear-gradient(135deg,#7C3AED,#EC4899,#F97316,#FBBF24);
+      display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;
+      box-shadow:0 8px 24px rgba(124,58,237,.3);
+    }
+    .logoName{
+      font-family:'Bebas Neue',system-ui;font-size:26px;letter-spacing:4px;
+      background:linear-gradient(90deg,#7C3AED,#EC4899,#F97316,#FBBF24);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    h1{font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:6px;}
+    .sub{font-size:13px;color:rgba(124,58,237,.75);margin-bottom:28px;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .field{margin-bottom:16px;}
+    label{display:block;font-size:12px;font-weight:700;color:rgba(124,58,237,.85);letter-spacing:.5px;margin-bottom:6px;}
+    input{
+      width:100%;padding:12px 14px;border-radius:12px;
+      border:1.5px solid rgba(124,58,237,.18);
+      background:rgba(255,255,255,.9);font-family:inherit;font-size:14px;
+      color:#1a1a1a;outline:none;transition:border-color .2s;
+    }
+    input:focus{border-color:rgba(124,58,237,.6);}
+    input::placeholder{color:rgba(124,58,237,.35);}
+    input.invalid{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.03);}
+    .hint{font-size:11px;color:rgba(124,58,237,.55);margin-top:4px;}
+    .hint.err{color:#dc2626;}
+    .errMsg{
+      display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+      color:#dc2626;border-radius:10px;padding:10px 14px;font-size:13px;
+      font-weight:600;margin-bottom:18px;
+    }
+    .errMsg.show{display:block;}
+    .successMsg{
+      display:none;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);
+      color:#059669;border-radius:10px;padding:10px 14px;font-size:13px;
+      font-weight:600;margin-bottom:18px;
+    }
+    .successMsg.show{display:block;}
+    .btnPrimary{
+      width:100%;padding:14px;border:0;border-radius:12px;cursor:pointer;
+      background:linear-gradient(135deg,#7C3AED,#EC4899,#F97316);
+      color:#fff;font-family:inherit;font-size:15px;font-weight:700;
+      box-shadow:0 12px 30px rgba(124,58,237,.35);
+      transition:transform .18s,box-shadow .18s;margin-top:4px;
+    }
+    .btnPrimary:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(124,58,237,.45);}
+    .btnPrimary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+    .divider{text-align:center;color:rgba(124,58,237,.45);font-size:13px;margin:20px 0;}
+    .link{
+      display:block;text-align:center;font-size:13px;font-weight:700;
+      color:rgba(124,58,237,.9);text-decoration:none;
+      padding:12px;border-radius:12px;border:1.5px solid rgba(124,58,237,.18);
+      transition:background .18s;
+    }
+    .link:hover{background:rgba(124,58,237,.06);}
+    .spinner{
+      display:inline-block;width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+      animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .pwStrength{height:4px;border-radius:4px;margin-top:6px;background:#eee;overflow:hidden;}
+    .pwBar{height:100%;width:0%;border-radius:4px;transition:width .3s,background .3s;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logoMark">M</div>
+      <div class="logoName">MOVIEMIND</div>
+    </div>
+    <h1>Create your account</h1>
+    <p class="sub">Free forever. No credit card required.</p>
+
+    <div class="errMsg"    id="errMsg"></div>
+    <div class="successMsg" id="successMsg"></div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" placeholder="Jane Smith" autocomplete="name" autofocus/>
+      </div>
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="jane_smith" autocomplete="username"/>
+        <div class="hint" id="usernameHint">Letters, numbers, underscores only</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email Address</label>
+      <input id="email" type="email" placeholder="jane@example.com" autocomplete="email"/>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Minimum 6 characters" autocomplete="new-password"/>
+      <div class="pwStrength"><div class="pwBar" id="pwBar"></div></div>
+      <div class="hint" id="pwHint">At least 6 characters</div>
+    </div>
+
+    <div class="field">
+      <label for="confirm">Confirm Password</label>
+      <input id="confirm" type="password" placeholder="Re-enter your password" autocomplete="new-password"/>
+      <div class="hint" id="confirmHint"></div>
+    </div>
+
+    <button class="btnPrimary" id="registerBtn" type="button">Create Account</button>
+
+    <div class="divider">— Already have an account? —</div>
+    <a href="/login" class="link">Log in instead →</a>
+  </div>
+
+  <script>
+    const errMsg     = document.getElementById('errMsg');
+    const successMsg = document.getElementById('successMsg');
+    const registerBtn = document.getElementById('registerBtn');
+    const nameEl     = document.getElementById('name');
+    const usernameEl = document.getElementById('username');
+    const emailEl    = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const confirmEl  = document.getElementById('confirm');
+    const pwBar      = document.getElementById('pwBar');
+    const pwHint     = document.getElementById('pwHint');
+    const confirmHint = document.getElementById('confirmHint');
+    const usernameHint = document.getElementById('usernameHint');
+
+    function showError(msg) {
+      errMsg.textContent = msg;
+      errMsg.classList.add('show');
+      successMsg.classList.remove('show');
+    }
+    function showSuccess(msg) {
+      successMsg.textContent = msg;
+      successMsg.classList.add('show');
+      errMsg.classList.remove('show');
+    }
+    function clearMessages() {
+      errMsg.classList.remove('show');
+      successMsg.classList.remove('show');
+    }
+
+    // Password strength
+    passwordEl.addEventListener('input', () => {
+      const pw = passwordEl.value;
+      let strength = 0;
+      if (pw.length >= 6)  strength++;
+      if (pw.length >= 10) strength++;
+      if (/[A-Z]/.test(pw)) strength++;
+      if (/[0-9]/.test(pw)) strength++;
+      if (/[^a-zA-Z0-9]/.test(pw)) strength++;
+
+      const colors = ['#ef4444','#f97316','#eab308','#22c55e','#16a34a'];
+      const labels = ['Too short','Weak','Fair','Good','Strong'];
+      const w = Math.min(strength, 5);
+      pwBar.style.width  = (w * 20) + '%';
+      pwBar.style.background = colors[w - 1] || '#eee';
+      pwHint.textContent = pw.length === 0 ? 'At least 6 characters' : (labels[w-1] || '');
+      pwHint.className   = 'hint' + (w < 2 && pw.length > 0 ? ' err' : '');
+    });
+
+    // Confirm password live check
+    confirmEl.addEventListener('input', () => {
+      if (!confirmEl.value) { confirmHint.textContent = ''; return; }
+      if (confirmEl.value === passwordEl.value) {
+        confirmHint.textContent = '✅ Passwords match';
+        confirmHint.className = 'hint';
+        confirmEl.classList.remove('invalid');
+      } else {
+        confirmHint.textContent = '❌ Passwords do not match';
+        confirmHint.className = 'hint err';
+        confirmEl.classList.add('invalid');
+      }
+    });
+
+    // Username live check
+    usernameEl.addEventListener('input', () => {
+      const u = usernameEl.value.trim();
+      if (!u) { usernameHint.textContent = 'Letters, numbers, underscores only'; usernameHint.className = 'hint'; return; }
+      if (u.length < 3) {
+        usernameHint.textContent = 'Too short (min 3 characters)';
+        usernameHint.className = 'hint err';
+        usernameEl.classList.add('invalid');
+      } else if (!/^[a-z0-9_]+$/i.test(u)) {
+        usernameHint.textContent = 'Only letters, numbers, underscores allowed';
+        usernameHint.className = 'hint err';
+        usernameEl.classList.add('invalid');
+      } else {
+        usernameHint.textContent = '✅ Username looks good';
+        usernameHint.className = 'hint';
+        usernameEl.classList.remove('invalid');
+      }
+    });
+
+    async function doRegister() {
+      clearMessages();
+      const name     = nameEl.value.trim();
+      const username = usernameEl.value.trim();
+      const email    = emailEl.value.trim();
+      const password = passwordEl.value;
+      const confirm  = confirmEl.value;
+
+      // Client-side validation first
+      if (!name || !username || !email || !password || !confirm) {
+        showError('Please fill in all fields.'); return;
+      }
+      if (username.length < 3) { showError('Username must be at least 3 characters.'); return; }
+      if (!/^[a-z0-9_]+$/i.test(username)) { showError('Username can only contain letters, numbers, and underscores.'); return; }
+      if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
+      if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
+      if (password !== confirm) { showError('Passwords do not match.'); return; }
+
+      registerBtn.disabled = true;
+      registerBtn.innerHTML = '<span class="spinner"></span>Creating account…';
+
+      try {
+        const res  = await fetch('/api/register', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ name, username, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Registration failed.'); return; }
+        showSuccess('Account created! Redirecting…');
+        setTimeout(() => { window.location.href = data.redirect || '/predict'; }, 800);
+      } catch(e) {
+        showError('Cannot connect to server. Make sure Flask is running on port 5000.');
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = 'Create Account';
+      }
+    }
+
+    registerBtn.addEventListener('click', doRegister);
+    [nameEl, usernameEl, emailEl, passwordEl, confirmEl].forEach(el =>
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); })
+    );
+  </script>
+</body>
+</html>

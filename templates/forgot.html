@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MovieMind · Forgot Password</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Poppins',system-ui,sans-serif;background:linear-gradient(135deg,#f5f0ff 0%,#fce7f3 33%,#fff7ed 66%,#fffbeb 100%);}
+    .card{width:min(440px,calc(100vw - 32px));background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border:1px solid rgba(124,58,237,.14);border-radius:24px;box-shadow:0 24px 60px rgba(124,58,237,.18);padding:40px 36px;}
+    .logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+    .logoMark{width:40px;height:40px;border-radius:14px;flex:0 0 auto;background:linear-gradient(135deg,#7C3AED,#EC4899,#F97316,#FBBF24);display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;box-shadow:0 8px 24px rgba(124,58,237,.3);}
+    .logoName{font-family:'Bebas Neue',system-ui;font-size:26px;letter-spacing:4px;background:linear-gradient(90deg,#7C3AED,#EC4899,#F97316,#FBBF24);-webkit-background-clip:text;background-clip:text;color:transparent;}
+    h1{font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:6px;}
+    .sub{font-size:13px;color:rgba(124,58,237,.75);margin-bottom:28px;}
+    .field{margin-bottom:18px;}
+    label{display:block;font-size:12px;font-weight:700;color:rgba(124,58,237,.85);letter-spacing:.5px;margin-bottom:6px;}
+    input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(124,58,237,.18);background:rgba(255,255,255,.9);font-family:inherit;font-size:14px;color:#1a1a1a;outline:none;transition:border-color .2s;}
+    input:focus{border-color:rgba(124,58,237,.6);}
+    .btnPrimary{width:100%;padding:14px;border:0;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#7C3AED,#EC4899,#F97316);color:#fff;font-family:inherit;font-size:15px;font-weight:700;box-shadow:0 12px 30px rgba(124,58,237,.35);transition:transform .18s,box-shadow .18s;}
+    .btnPrimary:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(124,58,237,.45);}
+    .errMsg{display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#dc2626;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:18px;}
+    .errMsg.show{display:block;}
+    .spinner{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><div class="logoMark">M</div><div class="logoName">MOVIEMIND</div></div>
+    <h1>Reset password</h1>
+    <p class="sub">Enter your email to receive a one‑time code.</p>
+    <div class="errMsg" id="errMsg"></div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <button class="btnPrimary" id="sendOtpBtn" type="button">Send OTP</button>
+    <hr style="margin:24px 0;"/>
+    <p class="sub">Enter the OTP and your new password.</p>
+    <div class="field">
+      <label for="otp">OTP</label>
+      <input id="otp" type="text" placeholder="123456"/>
+    </div>
+    <div class="field">
+      <label for="newPassword">New password</label>
+      <input id="newPassword" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btnPrimary" id="resetBtn" type="button">Reset password</button>
+  </div>
+  <script>
+    const errMsg=document.getElementById('errMsg');
+    const sendBtn=document.getElementById('sendOtpBtn');
+    const resetBtn=document.getElementById('resetBtn');
+    const emailEl=document.getElementById('email');
+    const otpEl=document.getElementById('otp');
+    const newPwEl=document.getElementById('newPassword');
+    function showError(msg){errMsg.textContent=msg;errMsg.classList.add('show');}
+    function clearError(){errMsg.classList.remove('show');}
+    async function sendOtp(){
+      clearError();
+      const email=emailEl.value.trim();
+      if(!email){showError('Email is required');return;}
+      sendBtn.disabled=true;sendBtn.innerHTML='<span class="spinner"></span>Sending…';
+      try{
+        const res=await fetch('/api/forgot/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+        const data=await res.json();
+        if(!res.ok){showError(data.error||'Failed to send OTP');}
+        else{alert('OTP sent to your email');}
+      }catch(e){showError('Network error');}
+      finally{sendBtn.disabled=false;sendBtn.textContent='Send OTP';}
+    }
+    async function resetPw(){
+      clearError();
+      const email=emailEl.value.trim();
+      const otp=otpEl.value.trim();
+      const newPw=newPwEl.value.trim();
+      if(!email||!otp||!newPw){showError('All fields are required');return;}
+      resetBtn.disabled=true;resetBtn.innerHTML='<span class="spinner"></span>Resetting…';
+      try{
+        const res=await fetch('/api/forgot/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp,new_password:newPw})});
+        const data=await res.json();
+        if(!res.ok){showError(data.error||'Reset failed');}
+        else{window.location.href='/login';}
+      }catch(e){showError('Network error');}
+      finally{resetBtn.disabled=false;resetBtn.textContent='Reset password';}
+    }
+    sendBtn.addEventListener('click',sendOtp);
+    resetBtn.addEventListener('click',resetPw);
+  </script>
+</body>
+</html>

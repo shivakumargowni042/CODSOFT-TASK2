@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*_err.txt
+*_out.txt
+
+# Environment (contains secrets)
+.env
+
+# User data (contains password hashes)
+data/
+
+# Dataset (large file — add to repo or not, your choice)
+# dataset/movies_dataset.csv
+
+# Model artifacts (keep in repo for deployment)
+# artifacts/model.pkl
+# artifacts/label_encoder.pkl
+
+# Local tool config
+set/

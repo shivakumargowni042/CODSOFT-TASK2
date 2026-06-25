@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MovieMind · Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --purple:#7C3AED;--pink:#EC4899;--orange:#F97316;--yellow:#FBBF24;
+      --bg:linear-gradient(135deg,#f5f0ff 0%,#fce7f3 33%,#fff7ed 66%,#fffbeb 100%);
+      --card:rgba(255,255,255,.80);--border:rgba(124,58,237,.13);
+      --text:#1a1a1a;--muted:rgba(124,58,237,.75);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Poppins',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
+
+    /* ── Nav ── */
+    .nav{
+      position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:300;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:8px 14px;border-radius:999px;width:min(1080px,calc(100vw - 28px));
+      background:rgba(255,255,255,.72);border:1px solid var(--border);
+      backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(124,58,237,.10);
+    }
+    .navL{display:flex;align-items:center;gap:10px;}
+    .brandMark{
+      width:32px;height:32px;border-radius:10px;flex:0 0 auto;text-decoration:none;
+      background:linear-gradient(135deg,var(--purple),var(--pink),var(--orange),var(--yellow));
+      display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;
+      box-shadow:0 8px 20px rgba(124,58,237,.25);
+    }
+    .brandName{
+      font-family:'Bebas Neue',system-ui;font-size:20px;letter-spacing:4px;
+      background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      text-decoration:none;white-space:nowrap;
+    }
+    .navR{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .navLink{
+      font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;
+      padding:7px 11px;border-radius:999px;transition:background .15s;white-space:nowrap;
+    }
+    .navLink:hover{background:rgba(124,58,237,.08);}
+    .userChip{
+      display:flex;align-items:center;gap:7px;padding:6px 12px 6px 8px;
+      background:rgba(124,58,237,.08);border:1px solid var(--border);
+      border-radius:999px;font-size:12px;font-weight:700;color:var(--muted);
+    }
+    .avatar{
+      width:22px;height:22px;border-radius:50%;
+      background:linear-gradient(135deg,var(--purple),var(--pink));
+      display:grid;place-items:center;color:#fff;font-size:10px;font-weight:900;
+    }
+    .logoutBtn{
+      font-size:12px;font-weight:700;color:var(--muted);background:transparent;
+      border:1px solid var(--border);border-radius:999px;padding:7px 12px;
+      cursor:pointer;transition:background .15s;
+    }
+    .logoutBtn:hover{background:rgba(239,68,68,.07);color:#dc2626;border-color:rgba(239,68,68,.2);}
+
+    /* ── Page ── */
+    .wrap{padding:90px 20px 80px;max-width:1140px;margin:0 auto;}
+    .pageHdr{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+    .pageTitle{
+      font-family:'Bebas Neue',system-ui;font-size:52px;
+      background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .pageSub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+    /* Theme toggle */
+    .themeTgl{
+      display:flex;align-items:center;gap:10px;padding:7px 12px;
+      background:var(--card);border:1px solid var(--border);border-radius:999px;
+      box-shadow:0 8px 24px rgba(124,58,237,.08);user-select:none;cursor:pointer;
+    }
+    .themeTgl span{font-size:12px;font-weight:700;color:var(--muted);}
+    .sw{width:40px;height:22px;border-radius:999px;background:rgba(124,58,237,.15);position:relative;}
+    .knob{width:16px;height:16px;border-radius:50%;position:absolute;top:3px;left:3px;
+      background:linear-gradient(135deg,var(--purple),var(--pink));transition:left .2s;}
+    .sw.on{background:rgba(236,72,153,.2);}
+    .sw.on .knob{left:21px;}
+
+    /* ── Main grid ── */
+    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:start;}
+    @media(max-width:860px){.grid{grid-template-columns:1fr;}}
+
+    /* Cards */
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:20px;
+      box-shadow:0 16px 48px rgba(124,58,237,.14);padding:22px;
+    }
+    .secLabel{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:12px;}
+
+    /* Input */
+    textarea{
+      width:100%;min-height:200px;border:0;outline:none;resize:vertical;
+      background:transparent;font-family:inherit;font-size:14px;
+      color:var(--text);line-height:1.7;
+    }
+    textarea::placeholder{color:rgba(124,58,237,.38);}
+    .cntRow{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px;}
+    .actRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+
+    /* Buttons */
+    .btn,.btnG{
+      border:0;border-radius:999px;padding:12px 24px;
+      font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+      transition:transform .15s,box-shadow .15s;
+    }
+    .btn{background:linear-gradient(135deg,var(--purple),var(--pink),var(--orange));color:#fff;
+      box-shadow:0 12px 28px rgba(124,58,237,.32);}
+    .btnG{background:var(--card);border:1px solid var(--border);color:var(--muted);
+      box-shadow:0 8px 20px rgba(124,58,237,.08);}
+    .btn:hover,.btnG:hover{transform:scale(1.05);}
+    .btn:disabled,.btnG:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+    .btnSm{
+      border:0;border-radius:999px;padding:9px 14px;font-family:inherit;
+      font-size:12px;font-weight:700;cursor:pointer;
+      background:var(--card);border:1px solid var(--border);color:var(--muted);
+      transition:transform .15s;
+    }
+    .btnSm:hover{transform:scale(1.05);}
+
+    /* Loading */
+    .loadRow{display:none;align-items:center;gap:10px;margin-top:14px;color:var(--muted);font-weight:600;font-size:13px;}
+    .loadRow.on{display:flex;}
+    .spin{width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(124,58,237,.2);
+      border-top-color:var(--purple);animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Sample chips */
+    .chips{display:none;flex-wrap:wrap;gap:8px;margin-top:12px;}
+    .chip{
+      padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;
+      cursor:pointer;background:var(--card);border:1px solid var(--border);
+      color:var(--muted);transition:transform .15s,background .15s;
+    }
+    .chip:hover{transform:scale(1.05);background:rgba(124,58,237,.08);}
+
+    /* ── Results ── */
+    .emptyState{color:var(--muted);font-weight:700;font-size:14px;padding:20px 4px;}
+    .resultPanel{
+      display:none;opacity:0;transform:translateY(14px);
+      transition:opacity .4s ease,transform .4s cubic-bezier(.2,.85,.2,1);
+      background:rgba(255,255,255,.9);border:1px solid var(--border);
+      border-radius:20px;box-shadow:0 20px 56px rgba(124,58,237,.20);padding:22px;
+    }
+    .resultPanel.vis{display:block;}
+    .resultPanel.anim{opacity:1;transform:translateY(0);}
+
+    .rHdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;}
+    .rLabel{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:var(--muted);}
+    .rGenre{
+      font-family:'Bebas Neue',system-ui;font-size:44px;line-height:.95;
+      background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .rEmoji{font-size:36px;}
+
+    /* Gauge */
+    .gauge{
+      width:100%;height:90px;border-radius:14px;position:relative;overflow:hidden;
+      background:linear-gradient(135deg,rgba(124,58,237,.07),rgba(236,72,153,.05));
+    }
+    .needle{
+      position:absolute;left:50%;bottom:12px;width:9px;height:54px;
+      transform-origin:bottom center;transform:translateX(-50%) rotate(-90deg);
+      background:linear-gradient(180deg,var(--purple),var(--pink),var(--orange));
+      border-radius:6px;box-shadow:0 8px 20px rgba(124,58,237,.28);
+      transition:transform .7s cubic-bezier(.2,.85,.2,1);
+    }
+    .gLabels{
+      position:absolute;bottom:7px;left:0;right:0;display:flex;
+      justify-content:space-between;padding:0 12px;
+      font-size:9px;color:rgba(124,58,237,.5);font-weight:700;pointer-events:none;
+    }
+    .confVal{font-weight:800;font-size:17px;color:var(--purple);margin-top:7px;}
+
+    /* Bars */
+    .miniLabel{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:var(--muted);margin:16px 0 8px;}
+    .barRow{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:8px;}
+    .barName{width:110px;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .barName.top{font-weight:900;color:var(--purple);}
+    .barTrack{flex:1;height:9px;border-radius:999px;background:rgba(124,58,237,.09);overflow:hidden;}
+    .barFill{height:100%;width:0%;border-radius:999px;
+      background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow));
+      transition:width .7s cubic-bezier(.2,.85,.2,1);}
+    .barPct{width:46px;text-align:right;font-weight:800;font-size:12px;color:var(--muted);}
+
+    /* Keywords */
+    .kwWrap{display:flex;flex-wrap:wrap;gap:7px;}
+    .kw{padding:6px 11px;border-radius:999px;background:rgba(124,58,237,.09);
+      border:1px solid rgba(124,58,237,.14);color:var(--purple);font-weight:700;font-size:12px;}
+    .noKw{color:rgba(124,58,237,.55);font-size:13px;font-style:italic;}
+
+    /* Movies */
+    .movie{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.09);
+      border-radius:11px;padding:9px 12px;margin-bottom:7px;}
+    .movie .mt{font-weight:800;color:var(--purple);font-size:13px;}
+    .movie .ms{font-size:11px;color:var(--muted);margin-top:2px;}
+
+    /* Feedback */
+    .fbBtns{display:flex;gap:10px;flex-wrap:wrap;}
+    .thanks{display:none;color:var(--purple);font-weight:700;font-size:13px;margin-top:8px;}
+    .thanks.on{display:block;}
+
+    /* ── Lower sections ── */
+    .twoCol{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;}
+    @media(max-width:860px){.twoCol{grid-template-columns:1fr;}}
+    .mini{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;}
+    .mini .mk{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:10px;}
+    .statRow{
+      display:flex;justify-content:space-between;gap:10px;
+      background:rgba(255,255,255,.7);border:1px solid var(--border);
+      border-radius:11px;padding:10px 13px;margin-bottom:7px;
+    }
+    .statRow .sk{font-weight:700;color:var(--purple);font-size:13px;}
+    .statRow .sv{font-weight:800;color:var(--muted);font-size:13px;}
+
+    /* History */
+    .histRow{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      background:rgba(255,255,255,.7);border:1px solid var(--border);
+      border-radius:11px;padding:9px 13px;margin-bottom:7px;font-size:13px;
+    }
+    .histRow .hg{font-weight:800;color:var(--purple);}
+    .histRow .hc{color:var(--muted);}
+    .histRow .ht{font-size:11px;color:rgba(124,58,237,.5);}
+    .histEmpty{color:rgba(124,58,237,.55);font-size:13px;font-style:italic;padding:4px 0;}
+
+    /* Export */
+    .expRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+
+    /* ── Dark mode ── */
+    body.dark{--bg:linear-gradient(135deg,#0e0a1e,#180a2c,#0c1828,#0a1818);--text:#e8e0ff;--card:rgba(20,12,40,.82);--border:rgba(167,139,250,.16);--muted:rgba(167,139,250,.85);}
+    body.dark .nav,.body.dark .themeTgl{background:rgba(15,10,30,.80);}
+    body.dark textarea{color:#e8e0ff;}
+    body.dark .resultPanel{background:rgba(20,12,40,.92);}
+    body.dark .statRow,.body.dark .histRow,.body.dark .movie{background:rgba(30,18,55,.80);}
+    body.dark .gauge{background:linear-gradient(135deg,rgba(167,139,250,.10),rgba(236,72,153,.06));}
+    body.dark .barTrack{background:rgba(167,139,250,.12);}
+    body.dark .kw{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.18);color:rgba(167,139,250,.9);}
+    body.dark .confVal,.body.dark .rGenre,.body.dark .barName.top{color:rgba(167,139,250,.95);}
+
+    @media(max-width:600px){.pageTitle{font-size:38px;}.rGenre{font-size:34px;}}
+  </style>
+</head>
+<body>
+
+<div id="welcomeToast" style="position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:500;background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 12px 40px rgba(124,58,237,.4);opacity:0;transition:opacity .5s ease,transform .5s ease;pointer-events:none;white-space:nowrap;">
+  👋 Welcome back, <span id="welcomeName"></span>!
+</div>
+
+<nav class="nav">
+  <div class="navL">
+    <a href="/predict" class="brandMark">M</a>
+    <a href="/predict" class="brandName">MOVIEMIND</a>
+  </div>
+  <div class="navR">
+    <a href="#genre"   class="navLink" data-scroll>Predict</a>
+    <a href="#results" class="navLink" data-scroll>Results</a>
+    <a href="#stats"   class="navLink" data-scroll>Stats</a>
+    <a href="#history" class="navLink" data-scroll>History</a>
+    <a href="#export"  class="navLink" data-scroll>Export</a>
+    <div class="userChip">
+      <div class="avatar" id="avatarLetter">?</div>
+      <span id="navUsername">{{ username }}</span>
+    </div>
+    <button class="logoutBtn" id="logoutBtn">Log out</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="pageHdr">
+    <div>
+      <div class="pageTitle">Genre Prediction</div>
+      <div class="pageSub">Paste any movie plot — the AI predicts its genre instantly.</div>
+    </div>
+    <div class="themeTgl" id="themeTgl">
+      <span>Theme</span>
+      <div class="sw" id="sw"><div class="knob"></div></div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div id="genre" class="grid">
+
+    <!-- Left: input -->
+    <div class="card">
+      <div class="secLabel">🎬 Enter Plot Summary</div>
+      <textarea id="plotInput"
+        placeholder="Paste a movie plot here…&#10;&#10;Example: A young wizard discovers he has been accepted into a school of witchcraft and wizardry where he learns magic, makes lifelong friends, and uncovers the truth about the dark sorcerer who killed his parents."
+        maxlength="6000"></textarea>
+      <div class="cntRow">
+        <span id="charCnt">0 / 6000</span>
+        <span>Speed: <b id="speedTxt">—</b></span>
+      </div>
+      <div class="actRow">
+        <button class="btn"  id="predictBtn">🔮 Predict</button>
+        <button class="btnG" id="surpriseBtn">🎲 Surprise Me</button>
+        <button class="btnG" id="clearBtn">✕ Clear</button>
+      </div>
+      <div class="loadRow" id="loadRow">
+        <div class="spin"></div>
+        <span>Analysing plot…</span>
+      </div>
+      <div class="chips" id="chips">
+        <div class="chip" data-s="fantasy">Fantasy</div>
+        <div class="chip" data-s="scifi">Sci-Fi</div>
+        <div class="chip" data-s="horror">Horror</div>
+        <div class="chip" data-s="romance">Romance</div>
+        <div class="chip" data-s="crime">Crime</div>
+        <div class="chip" data-s="action">Action</div>
+        <div class="chip" data-s="comedy">Comedy</div>
+        <div class="chip" data-s="drama">Drama</div>
+        <div class="chip" data-s="thriller">Thriller</div>
+      </div>
+    </div>
+
+    <!-- Right: results -->
+    <div id="results">
+      <div class="secLabel" style="padding:0 4px 10px;">📊 Results Dashboard</div>
+
+      <div id="emptyState" class="emptyState card">
+        🎬 Enter a plot summary and click <b>Predict</b> to see the genre analysis.
+      </div>
+
+      <div id="resultPanel" class="resultPanel">
+        <div class="rHdr">
+          <div>
+            <div class="rLabel">Predicted Genre</div>
+            <div class="rGenre" id="rGenre">—</div>
+          </div>
+          <div class="rEmoji" id="rEmoji">🎬</div>
+        </div>
+
+        <div class="secLabel">Confidence Score</div>
+        <div class="gauge">
+          <div class="needle" id="needle"></div>
+          <div class="gLabels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+        </div>
+        <div class="confVal" id="confVal">0%</div>
+
+        <div class="miniLabel">Top 3 Genres</div>
+        <div id="bars"></div>
+
+        <div class="miniLabel">Keywords Detected</div>
+        <div class="kwWrap" id="kwWrap"></div>
+
+        <div class="miniLabel">Example Movies</div>
+        <div id="moviesEl"></div>
+
+        <div class="miniLabel">Was this correct?</div>
+        <div class="fbBtns">
+          <button class="btnSm" data-fb="yes">👍 Yes</button>
+          <button class="btnSm" data-fb="no">👎 No</button>
+        </div>
+        <div class="thanks" id="thanks">✅ Thanks for your feedback!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div id="stats" class="twoCol">
+    <div class="mini">
+      <div class="mk">Session Statistics</div>
+      <div class="statRow"><div class="sk">Predictions</div><div class="sv" id="stCount">0</div></div>
+      <div class="statRow"><div class="sk">Avg. confidence</div><div class="sv" id="stAvg">—</div></div>
+      <div class="statRow"><div class="sk">Top genre</div><div class="sv" id="stTop">—</div></div>
+      <div class="statRow"><div class="sk">Fastest</div><div class="sv" id="stFast">—</div></div>
+    </div>
+    <div class="mini">
+      <div class="mk">Bulk Prediction</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Process multiple plots at once — coming soon.</div>
+      <div class="expRow" style="margin-top:0;">
+        <button class="btnG" disabled>📂 Upload CSV</button>
+        <button class="btn"  disabled>⚡ Run Batch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div id="history" class="mini" style="margin-top:24px;">
+    <div class="mk">Prediction History</div>
+    <div id="histTable">
+      <div class="histEmpty" id="histEmpty">No predictions yet — run your first one above.</div>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div id="export" class="mini" style="margin-top:24px;">
+    <div class="mk">Export Results</div>
+    <div style="font-size:13px;color:var(--muted);">Download the last prediction as JSON, CSV, or an HTML report.</div>
+    <div class="expRow">
+      <button class="btnG" id="expJson">📄 JSON</button>
+      <button class="btnG" id="expCsv">📊 CSV</button>
+      <button class="btn"  id="expHtml">📋 Report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Welcome toast ───────────────────────────────────────────────────────────
+  (function() {
+    const USERNAME = {{ username | tojson }};
+    const toast = document.getElementById('welcomeToast');
+    document.getElementById('welcomeName').textContent = USERNAME;
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    }, 4000);
+  })();
+
+  // ── Username / avatar ───────────────────────────────────────────────────────
+  const USERNAME = {{ username | tojson }};
+  document.getElementById('navUsername').textContent = USERNAME;
+  document.getElementById('avatarLetter').textContent = USERNAME.charAt(0).toUpperCase();
+
+  // ── Logout ──────────────────────────────────────────────────────────────────
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login';
+  });
+
+  // ── Dark mode ───────────────────────────────────────────────────────────────
+  const sw = document.getElementById('sw');
+  const tgl = document.getElementById('themeTgl');
+  function setDark(on) {
+    sw.classList.toggle('on', on);
+    document.body.classList.toggle('dark', on);
+  }
+  if (window.matchMedia('(prefers-color-scheme:dark)').matches) setDark(true);
+  tgl.addEventListener('click', () => setDark(!sw.classList.contains('on')));
+
+  // ── Smooth scroll ───────────────────────────────────────────────────────────
+  document.querySelectorAll('[data-scroll]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+
+  // ── Char counter ────────────────────────────────────────────────────────────
+  const plotInput = document.getElementById('plotInput');
+  const charCnt   = document.getElementById('charCnt');
+  plotInput.addEventListener('input', () => charCnt.textContent = plotInput.value.length + ' / 6000');
+
+  // ── Sample plots ────────────────────────────────────────────────────────────
+  const SAMPLES = {
+    fantasy:  'A young orphan discovers he is a wizard and is accepted into a school of witchcraft and wizardry. He learns magic, makes friends, and faces the sorcerer who murdered his parents.',
+    scifi:    'In 2157 a lone astronaut pilots a spacecraft through a newly discovered wormhole searching for a habitable planet, but discovers an alien intelligence that has been waiting for humanity to arrive.',
+    horror:   'A family moves into a remote lighthouse where the previous keeper vanished. Supernatural voices emerge at night, their daughter is possessed by a demonic entity, and something evil lives in the walls.',
+    romance:  'A career-driven architect and a free-spirited musician meet by chance in Florence. Despite coming from rival families, they fall deeply in love over one sun-drenched summer.',
+    crime:    'A retired safecracker is blackmailed into pulling one final heist on a heavily guarded vault by a ruthless crime boss who holds his family hostage.',
+    action:   'An elite special-forces soldier is framed for assassinating a diplomat. She must fight through a shadow network of mercenaries to expose the real conspiracy before they silence her.',
+    comedy:   'Two mismatched roommates accidentally win a honeymoon package and must pretend to be newlyweds at a resort where nosy guests and a relentless therapist are determined to expose them.',
+    drama:    'A mother and her estranged adult daughter are forced to share a house for one summer and must confront the grief, guilt, and love that tore their family apart years ago.',
+    thriller: 'A woman discovers her husband has a secret second identity — and that his other handlers will do anything to make sure she never tells anyone what she has found.',
+  };
+
+  const chipsEl  = document.getElementById('chips');
+  const surprBtn = document.getElementById('surpriseBtn');
+  surprBtn.addEventListener('click', () => {
+    chipsEl.style.display = chipsEl.style.display === 'flex' ? 'none' : 'flex';
+  });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      const s = SAMPLES[c.dataset.s];
+      if (s) {
+        plotInput.value = s;
+        charCnt.textContent = s.length + ' / 6000';
+        chipsEl.style.display = 'none';
+        plotInput.focus();
+      }
+    });
+  });
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    plotInput.value = '';
+    charCnt.textContent = '0 / 6000';
+    chipsEl.style.display = 'none';
+    plotInput.focus();
+  });
+
+  // ── Session state ───────────────────────────────────────────────────────────
+  let history   = [];
+  let lastPred  = null;
+
+  function updateStats() {
+    document.getElementById('stCount').textContent = history.length;
+    if (!history.length) return;
+    const avg = Math.round(history.reduce((s,p) => s + p.confidence, 0) / history.length);
+    document.getElementById('stAvg').textContent = avg + '%';
+    const counts = {};
+    history.forEach(p => counts[p.genre] = (counts[p.genre]||0)+1);
+    document.getElementById('stTop').textContent = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+    const times = history.map(p=>parseFloat(p.prediction_time)).filter(n=>!isNaN(n));
+    if (times.length) document.getElementById('stFast').textContent = Math.min(...times).toFixed(3)+'s';
+  }
+
+  function addHistoryRow(p) {
+    const empty = document.getElementById('histEmpty');
+    if (empty) empty.remove();
+    const tbl  = document.getElementById('histTable');
+    const row  = document.createElement('div');
+    row.className = 'histRow';
+    const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    row.innerHTML = `<span class="hg">${p.emoji||'🎬'} ${p.genre}</span><span class="hc">${Math.round(p.confidence)}% confidence</span><span class="ht">${t}</span>`;
+    tbl.prepend(row);
+    const rows = tbl.querySelectorAll('.histRow');
+    if (rows.length > 10) rows[rows.length-1].remove();
+  }
+
+  // ── Render result ───────────────────────────────────────────────────────────
+  function renderResult(d) {
+    const panel = document.getElementById('resultPanel');
+    const empty = document.getElementById('emptyState');
+
+    document.getElementById('rGenre').textContent = d.genre;
+    document.getElementById('rEmoji').textContent  = d.emoji || '🎬';
+
+    const conf = Number(d.confidence) || 0;
+    document.getElementById('confVal').textContent = Math.round(conf) + '%';
+    const deg = -90 + (conf / 100) * 180;
+    setTimeout(() => {
+      document.getElementById('needle').style.transform = `translateX(-50%) rotate(${deg}deg)`;
+    }, 60);
+
+    // Top 3 bars
+    const barsEl = document.getElementById('bars');
+    barsEl.innerHTML = '';
+    (d.top3 || []).slice(0,3).forEach((row, i) => {
+      const sc = Number(row.score) || 0;
+      const div = document.createElement('div');
+      div.className = 'barRow';
+      div.innerHTML = `
+        <div class="barName${i===0?' top':''}">${row.genre}</div>
+        <div class="barTrack"><div class="barFill" style="width:0%"></div></div>
+        <div class="barPct">${sc.toFixed(1)}%</div>`;
+      barsEl.appendChild(div);
+      setTimeout(() => div.querySelector('.barFill').style.width = Math.min(sc,100)+'%', 80+i*60);
+    });
+
+    // Keywords
+    const kwEl = document.getElementById('kwWrap');
+    kwEl.innerHTML = '';
+    (d.keywords||[]).length
+      ? (d.keywords||[]).forEach(k => { const s=document.createElement('span'); s.className='kw'; s.textContent=k; kwEl.appendChild(s); })
+      : (kwEl.innerHTML='<span class="noKw">No specific keywords detected.</span>');
+
+    // Movies
+    const movEl = document.getElementById('moviesEl');
+    movEl.innerHTML = '';
+    (d.movies||[]).slice(0,3).forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'movie';
+      div.innerHTML = `<div class="mt">🎞️ ${m}</div><div class="ms">Example · ${d.genre}</div>`;
+      movEl.appendChild(div);
+    });
+
+    // Feedback reset
+    document.getElementById('thanks').classList.remove('on');
+    document.querySelectorAll('[data-fb]').forEach(b => b.onclick = () => document.getElementById('thanks').classList.add('on'));
+
+    // Show panel
+    if (empty) empty.style.display = 'none';
+    panel.classList.remove('anim');
+    panel.classList.add('vis');
+    requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('anim')));
+
+    if (window.innerWidth < 860) {
+      setTimeout(() => panel.scrollIntoView({behavior:'smooth',block:'nearest'}), 200);
+    }
+
+    // State
+    lastPred = { ...d, createdAt: new Date().toISOString(), plotLen: plotInput.value.length };
+    history.push(lastPred);
+    updateStats();
+    addHistoryRow(d);
+    if (d.prediction_time) document.getElementById('speedTxt').textContent = d.prediction_time;
+  }
+
+  // ── Predict ─────────────────────────────────────────────────────────────────
+  async function runPredict() {
+    const text = plotInput.value.trim();
+    if (!text) { plotInput.focus(); return; }
+    if (text.length < 20) { alert('Please enter at least 20 characters.'); plotInput.focus(); return; }
+
+    const loadRow = document.getElementById('loadRow');
+    const btn     = document.getElementById('predictBtn');
+    loadRow.classList.add('on');
+    btn.disabled = true;
+    document.getElementById('speedTxt').textContent = '…';
+
+    // Hide old error if any
+    const empty = document.getElementById('emptyState');
+
+    try {
+      const res  = await fetch('/api/predict', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ plot: text })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Server returned an error (e.g. 400 bad request)
+        if (empty) { empty.style.display='block'; empty.innerHTML='⚠️ <b>Error:</b> ' + (data.error||'Unknown error'); }
+        return;
+      }
+
+      renderResult(data);
+
+    } catch(err) {
+      // Network error — Flask not running
+      if (empty) {
+        empty.style.display = 'block';
+        empty.innerHTML = '⚠️ <b>Cannot connect to server.</b><br>Make sure you run <code style="background:rgba(124,58,237,.1);padding:2px 6px;border-radius:4px;">python app.py</code> first, then open <b>http://localhost:5000</b> in your browser.';
+      }
+    } finally {
+      loadRow.classList.remove('on');
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('predictBtn').addEventListener('click', runPredict);
+  plotInput.addEventListener('keydown', e => { if (e.ctrlKey && e.key==='Enter') runPredict(); });
+
+  // ── Exports ─────────────────────────────────────────────────────────────────
+  function dl(name, content, mime) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content],{type:mime}));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  document.getElementById('expJson').addEventListener('click', () => {
+    if (!lastPred) { alert('Run a prediction first.'); return; }
+    dl('moviemind.json', JSON.stringify({
+      genre:lastPred.genre, emoji:lastPred.emoji, confidence:lastPred.confidence,
+      top3:lastPred.top3, keywords:lastPred.keywords, movies:lastPred.movies,
+      prediction_time:lastPred.prediction_time, plot_length:lastPred.plotLen,
+      created_at:lastPred.createdAt
+    }, null, 2), 'application/json');
+  });
+
+  document.getElementById('expCsv').addEventListener('click', () => {
+    if (!lastPred) { alert('Run a prediction first.'); return; }
+    const t = lastPred.top3 || [];
+    const rows = ['genre,confidence,2nd_genre,2nd_score,3rd_genre,3rd_score,keywords,created_at',
+      [lastPred.genre, lastPred.confidence,
+       t[1]?.genre||'', t[1]?.score||'',
+       t[2]?.genre||'', t[2]?.score||'',
+       '"'+(lastPred.keywords||[]).join(', ')+'"',
+       lastPred.createdAt].join(',')];
+    dl('moviemind.csv', rows.join('\n'), 'text/csv');
+  });
+
+  document.getElementById('expHtml').addEventListener('click', () => {
+    if (!lastPred) { alert('Run a prediction first.'); return; }
+    const d = lastPred;
+    const t3 = (d.top3||[]).map(r=>`<li><b>${r.genre}</b>: ${r.score.toFixed(1)}%</li>`).join('');
+    const mv = (d.movies||[]).map(m=>`<li>${m}</li>`).join('');
+    dl('moviemind-report.html', `<!doctype html><html><head><meta charset="utf-8">
+<title>MovieMind Report</title>
+<style>body{font-family:Arial,sans-serif;padding:32px;max-width:680px;margin:0 auto;color:#1a1a1a}
+h1{color:#7C3AED}h2{color:#EC4899;border-bottom:2px solid #f0e8ff;padding-bottom:6px}
+.badge{background:#7C3AED;color:#fff;padding:6px 18px;border-radius:999px;font-weight:700;font-size:17px}
+.conf{font-size:34px;font-weight:900;color:#7C3AED}ul{line-height:2}
+footer{margin-top:40px;color:#aaa;font-size:12px}</style>
+</head><body>
+<h1>🎬 MovieMind Prediction Report</h1>
+<p><b>Generated:</b> ${new Date(d.createdAt).toLocaleString()}</p>
+<h2>Result</h2>
+<p><span class="badge">${d.emoji||'🎬'} ${d.genre}</span></p>
+<p class="conf">${Math.round(d.confidence)}% confidence</p>
+<h2>Top 3</h2><ul>${t3}</ul>
+<h2>Keywords</h2><p>${(d.keywords||[]).join(', ')||'None'}</p>
+<h2>Example Movies</h2><ul>${mv}</ul>
+<h2>Meta</h2><p>Plot length: ${d.plotLen} chars | Time: ${d.prediction_time}</p>
+<footer>MovieMind — AI Genre Detection</footer>
+</body></html>`, 'text/html');
+  });
+
+  // ── Focus on load ────────────────────────────────────────────────────────────
+  window.addEventListener('load', () => setTimeout(() => plotInput.focus(), 300));
+</script>
+</body>
+</html>

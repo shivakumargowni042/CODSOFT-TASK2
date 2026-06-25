@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MovieMind — Predict Movie Genres with AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple : #7C3AED;
+      --pink   : #EC4899;
+      --orange : #F97316;
+      --yellow : #FBBF24;
+      --bg     : linear-gradient(135deg, #f5f0ff 0%, #fce7f3 40%, #fff7ed 75%, #fffbeb 100%);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    #cursor {
+      position: fixed; width: 14px; height: 14px;
+      background: linear-gradient(135deg, #7C3AED, #EC4899);
+      border-radius: 50%; pointer-events: none;
+      z-index: 99999; transform: translate(-50%,-50%);
+      transition: width .2s, height .2s;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 2px solid rgba(124,58,237,0.35); border-radius: 50%;
+      pointer-events: none; z-index: 99998;
+      transform: translate(-50%,-50%);
+      transition: width .3s, height .3s;
+    }
+
+    #intro {
+      position: fixed; inset: 0; z-index: 9000;
+      background: linear-gradient(135deg,#7C3AED 0%,#EC4899 40%,#F97316 75%,#FBBF24 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .bg-orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); opacity: 0.3;
+      animation: orb-float 6s ease-in-out infinite;
+    }
+    .bg-orb.o1{width:300px;height:300px;background:#fff;top:-60px;left:-60px;}
+    .bg-orb.o2{width:200px;height:200px;background:#FBBF24;bottom:30px;right:-30px;animation-delay:2s;}
+    .bg-orb.o3{width:150px;height:150px;background:#EC4899;top:40%;left:8%;animation-delay:4s;}
+    @keyframes orb-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-25px)}}
+
+    .reel-piece { position: absolute; opacity: 0; }
+    .reel-piece svg { filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15)); }
+
+    .p1{animation:fp-tl 1.1s cubic-bezier(.22,.68,0,1.2) .1s forwards;}
+    .p2{animation:fp-tr 1.1s cubic-bezier(.22,.68,0,1.2) .2s forwards;}
+    .p3{animation:fp-l  1.1s cubic-bezier(.22,.68,0,1.2) 0s  forwards;}
+    .p4{animation:fp-r  1.1s cubic-bezier(.22,.68,0,1.2) .3s forwards;}
+    .p5{animation:fp-bl 1.1s cubic-bezier(.22,.68,0,1.2) .15s forwards;}
+    .p6{animation:fp-br 1.1s cubic-bezier(.22,.68,0,1.2) .25s forwards;}
+
+    @keyframes fp-tl{0%{transform:translate(-320px,-320px) rotate(-50deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(-62px,-62px) rotate(0) scale(1);opacity:1}}
+    @keyframes fp-tr{0%{transform:translate(320px,-320px) rotate(50deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(62px,-62px) rotate(0) scale(1);opacity:1}}
+    @keyframes fp-l{0%{transform:translate(-420px,0) rotate(-90deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(-90px,0) rotate(0) scale(1);opacity:1}}
+    @keyframes fp-r{0%{transform:translate(420px,0) rotate(90deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(90px,0) rotate(0) scale(1);opacity:1}}
+    @keyframes fp-bl{0%{transform:translate(-320px,320px) rotate(50deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(-62px,62px) rotate(0) scale(1);opacity:1}}
+    @keyframes fp-br{0%{transform:translate(320px,320px) rotate(-50deg) scale(.4);opacity:0}70%{opacity:1}100%{transform:translate(62px,62px) rotate(0) scale(1);opacity:1}}
+
+    #reel-logo{
+      position:relative;z-index:2;opacity:0;
+      animation:logo-pop .7s cubic-bezier(.22,.68,0,1.3) 1.5s forwards;
+    }
+    #reel-logo svg{
+      width:130px;height:130px;
+      filter:drop-shadow(0 8px 32px rgba(0,0,0,0.2));
+      animation:spin-once .8s ease-in-out 1.5s both;
+    }
+    @keyframes logo-pop{0%{opacity:0;transform:scale(.3)}60%{transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+    @keyframes spin-once{0%{transform:rotate(0) scale(.3)}60%{transform:rotate(390deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+
+    #intro-title{
+      position:relative;z-index:2;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(52px,10vw,90px);
+      color:#fff;letter-spacing:8px;
+      text-shadow:0 4px 24px rgba(0,0,0,0.15);
+      margin-top:16px;opacity:0;
+      animation:slide-up .7s ease 2.3s forwards;
+    }
+    #intro-sub{
+      position:relative;z-index:2;
+      font-size:13px;letter-spacing:4px;
+      color:rgba(255,255,255,0.8);text-transform:uppercase;
+      margin-top:6px;opacity:0;
+      animation:slide-up .5s ease 2.8s forwards;
+    }
+
+    @keyframes slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    #flash{
+      position:absolute;inset:0;background:white;
+      opacity:0;pointer-events:none;
+      animation:flash-fx .35s ease 1.45s forwards;
+    }
+    @keyframes flash-fx{0%{opacity:0}40%{opacity:.5}100%{opacity:0}}
+
+    #intro-top{
+      position:absolute;top:0;left:0;right:0;height:50%;
+      background:linear-gradient(135deg,#7C3AED,#EC4899);
+      z-index:3;
+    }
+    #intro-bot{
+      position:absolute;bottom:0;left:0;right:0;height:50%;
+      background:linear-gradient(135deg,#F97316,#FBBF24);
+      z-index:3;
+    }
+    #intro.splitting #intro-top{animation:split-up .75s cubic-bezier(.76,0,.24,1) forwards;}
+    #intro.splitting #intro-bot{animation:split-dn .75s cubic-bezier(.76,0,.24,1) forwards;}
+    @keyframes split-up{to{transform:translateY(-100%)}}
+    @keyframes split-dn{to{transform:translateY(100%)}}
+
+    #landing{
+      min-height:100vh;
+      background:linear-gradient(135deg,#f5f0ff 0%,#fce7f3 40%,#fff7ed 75%,#fffbeb 100%);
+      position:relative;overflow:hidden;
+      opacity:0;transform:translateY(30px);
+      transition:opacity .8s ease,transform .8s ease;
+    }
+    #landing.visible{opacity:1;transform:translateY(0);}
+
+    .float-el{
+      position:absolute;pointer-events:none;
+      user-select:none;opacity:0.14;
+      animation:float-bob 5s ease-in-out infinite;
+      transition:transform .12s ease-out;
+      font-size:clamp(24px,4vw,52px);
+    }
+    .float-el:nth-child(1){top:6%;left:4%;animation-delay:0s;}
+    .float-el:nth-child(2){top:12%;right:6%;animation-delay:1s;font-size:clamp(20px,3vw,40px);}
+    .float-el:nth-child(3){top:45%;left:2%;animation-delay:2s;font-size:clamp(18px,2.5vw,36px);}
+    .float-el:nth-child(4){top:55%;right:3%;animation-delay:.5s;}
+    .float-el:nth-child(5){bottom:18%;left:10%;animation-delay:3s;font-size:clamp(18px,2.5vw,36px);}
+    .float-el:nth-child(6){bottom:22%;right:12%;animation-delay:1.5s;}
+    @keyframes float-bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-16px) rotate(5deg)}}
+
+    .l-logo{
+      position:absolute;top:24px;left:32px;
+      display:flex;align-items:center;gap:10px;
+      text-decoration:none;z-index:10;
+      opacity:0;animation:slide-up .5s ease .2s forwards;
+    }
+    .l-logo svg{width:30px;height:30px;}
+    .l-logo-text{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:22px;letter-spacing:3px;
+      background:linear-gradient(135deg,#7C3AED,#EC4899);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .hero{
+      display:flex;flex-direction:column;
+      align-items:center;text-align:center;
+      padding:100px 24px 0;
+      position:relative;z-index:2;
+    }
+
+    .hero-eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:600;
+      letter-spacing:4px;text-transform:uppercase;
+      color:#7C3AED;
+      background:rgba(124,58,237,0.08);
+      border:1.5px solid rgba(124,58,237,0.2);
+      padding:8px 20px;border-radius:999px;
+      margin-bottom:32px;
+      opacity:0;animation:slide-up .5s ease .3s forwards;
+    }
+
+    .hero-title{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(80px,16vw,160px);
+      line-height:.88;
+      background:linear-gradient(135deg,#7C3AED 0%,#EC4899 35%,#F97316 70%,#FBBF24 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+      letter-spacing:4px;
+      margin-bottom:28px;
+      opacity:0;transform:translateY(30px);
+      animation:slide-up .7s ease .5s forwards;
+    }
+
+    .hero-tagline{
+      font-size:clamp(16px,2.2vw,22px);
+      font-weight:300;font-style:italic;
+      color:#6B3FA0;
+      margin-bottom:20px;
+      opacity:0;animation:slide-up .6s ease .8s forwards;
+    }
+
+    .hero-desc{
+      font-size:14px;color:#9B72CF;
+      max-width:480px;line-height:1.7;
+      margin-bottom:44px;
+      opacity:0;animation:slide-up .6s ease 1s forwards;
+    }
+
+    .hero-btn{
+      display:inline-flex;align-items:center;gap:12px;
+      padding:18px 52px;
+      background:linear-gradient(135deg,#7C3AED,#EC4899,#F97316);
+      background-size:200%;
+      color:#fff;font-family:'Poppins',sans-serif;
+      font-size:17px;font-weight:700;letter-spacing:.5px;
+      border:none;border-radius:999px;cursor:pointer;
+      box-shadow:0 8px 32px rgba(124,58,237,0.35);
+      transition:transform .25s ease,box-shadow .25s ease;
+      opacity:0;animation:slide-up .6s ease 1.1s forwards,
+                          btn-grad 3s ease infinite 1.7s;
+      margin-bottom:64px;
+      text-decoration:none;
+    }
+    @keyframes btn-grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .hero-btn:hover{transform:scale(1.06) translateY(-3px);box-shadow:0 16px 48px rgba(124,58,237,0.45);}
+    .hero-btn:active{transform:scale(.97);}
+    .btn-arr{font-size:20px;transition:transform .2s;}
+    .hero-btn:hover .btn-arr{transform:translateX(5px);}
+
+    .steps-section{
+      padding:0 24px 80px;
+      position:relative;z-index:2;
+      display:flex;flex-direction:column;
+      align-items:center;
+    }
+
+    .steps-label{
+      font-size:11px;font-weight:600;
+      letter-spacing:4px;text-transform:uppercase;
+      color:#EC4899;margin-bottom:16px;
+    }
+
+    .steps-title{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(32px,5vw,48px);
+      letter-spacing:3px;
+      background:linear-gradient(135deg,#7C3AED,#EC4899);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:12px;text-align:center;
+    }
+
+    .steps-sub{
+      font-size:14px;color:#9B72CF;
+      max-width:440px;text-align:center;
+      line-height:1.6;margin-bottom:48px;
+    }
+
+    .steps-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:24px;max-width:860px;width:100%;
+    }
+
+    .step-card{
+      background:white;border-radius:20px;
+      padding:32px 24px;
+      box-shadow:0 4px 24px rgba(124,58,237,0.10),
+                 0 1px 4px rgba(0,0,0,0.05);
+      border:1.5px solid rgba(124,58,237,0.1);
+      border-top:4px solid transparent;
+      position:relative;overflow:hidden;
+      transition:transform .25s ease,box-shadow .25s ease;
+      cursor:default;
+    }
+    .step-card:nth-child(1){border-top-color:#7C3AED;}
+    .step-card:nth-child(2){border-top-color:#EC4899;}
+    .step-card:nth-child(3){border-top-color:#F97316;}
+
+    .step-card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 16px 48px rgba(124,58,237,0.18),
+                 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    .step-num{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:64px;line-height:1;
+      opacity:.06;
+      position:absolute;top:12px;right:16px;
+      background:linear-gradient(135deg,#7C3AED,#EC4899);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .step-icon{font-size:36px;margin-bottom:16px;display:block;}
+    .step-title{
+      font-size:16px;font-weight:700;
+      background:linear-gradient(135deg,#7C3AED,#EC4899);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:8px;
+    }
+    .step-desc{font-size:13px;color:#9B72CF;line-height:1.6;}
+    .steps-grid .step-card:not(:last-child)::after{
+      content:'\2192';
+      position:absolute;
+      top:50%;right:-20px;
+      transform:translateY(-50%);
+      font-size:20px;color:#EC4899;
+      font-weight:700;z-index:5;
+    }
+
+    .l-footer{
+      text-align:center;padding:24px;
+      font-size:11px;color:#C4A8E0;
+      letter-spacing:2px;text-transform:uppercase;
+      border-top:1px solid rgba(124,58,237,0.08);
+    }
+
+    @media(max-width:768px){
+      .steps-grid{grid-template-columns:1fr;max-width:400px;}
+      .step-card::after{display:none;}
+      .hero{padding-top:80px;}
+    }
+    @media(max-width:480px){
+      .hero-btn{padding:15px 36px;font-size:15px;}
+      .l-logo{left:16px;}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <div id="intro">
+    <div id="intro-top"></div>
+    <div id="intro-bot"></div>
+    <div class="bg-orb o1"></div>
+    <div class="bg-orb o2"></div>
+    <div class="bg-orb o3"></div>
+    <div id="flash"></div>
+
+    <div class="reel-piece p1">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <rect x="8" y="2" width="9" height="9" rx="2" fill="white"/>
+        <rect x="48" y="2" width="9" height="9" rx="2" fill="white"/>
+        <rect x="8" y="54" width="9" height="9" rx="2" fill="white"/>
+        <rect x="48" y="54" width="9" height="9" rx="2" fill="white"/>
+        <circle cx="32" cy="32" r="11" stroke="white" stroke-width="2.5"/>
+        <circle cx="32" cy="32" r="4" fill="white"/>
+      </svg>
+    </div>
+    <div class="reel-piece p2">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <polygon points="24,16 24,49 50,32" fill="white"/>
+      </svg>
+    </div>
+    <div class="reel-piece p3">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <line x1="12" y1="18" x2="53" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="12" y1="28" x2="53" y2="28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="12" y1="38" x2="53" y2="38" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="12" y1="48" x2="53" y2="48" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="reel-piece p4">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <circle cx="32" cy="32" r="20" stroke="white" stroke-width="2" stroke-dasharray="5 3"/>
+        <circle cx="32" cy="32" r="7" fill="white"/>
+      </svg>
+    </div>
+    <div class="reel-piece p5">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <rect x="10" y="10" width="18" height="18" rx="3" fill="white" fill-opacity=".3" stroke="white" stroke-width="1.5"/>
+        <rect x="37" y="10" width="18" height="18" rx="3" fill="white" fill-opacity=".3" stroke="white" stroke-width="1.5"/>
+        <rect x="10" y="37" width="18" height="18" rx="3" fill="white" fill-opacity=".3" stroke="white" stroke-width="1.5"/>
+        <rect x="37" y="37" width="18" height="18" rx="3" fill="white" fill-opacity=".3" stroke="white" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="reel-piece p6">
+      <svg width="65" height="65" viewBox="0 0 65 65" fill="none">
+        <rect x="2" y="2" width="61" height="61" rx="6" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <path d="M12 30 Q20 14 32 22 Q44 30 53 22" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M12 42 Q20 26 32 34 Q44 42 53 34" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div id="reel-logo">
+      <svg width="130" height="130" viewBox="0 0 130 130" fill="none">
+        <circle cx="65" cy="65" r="62" stroke="white" stroke-width="3" stroke-opacity=".9"/>
+        <circle cx="65" cy="7"   r="6" fill="white"/>
+        <circle cx="65" cy="123" r="6" fill="white"/>
+        <circle cx="7"  cy="65"  r="6" fill="white"/>
+        <circle cx="123" cy="65" r="6" fill="white"/>
+        <circle cx="25" cy="25"  r="6" fill="white"/>
+        <circle cx="105" cy="25" r="6" fill="white"/>
+        <circle cx="25" cy="105" r="6" fill="white"/>
+        <circle cx="105" cy="105" r="6" fill="white"/>
+        <circle cx="65" cy="65" r="36" stroke="white" stroke-width="2" stroke-opacity=".5"/>
+        <circle cx="65" cy="65" r="16" fill="white" fill-opacity=".15" stroke="white" stroke-width="2"/>
+        <circle cx="65" cy="65" r="7"  fill="white"/>
+        <polygon points="60,57 60,73 76,65" fill="#EC4899"/>
+      </svg>
+    </div>
+
+    <div id="intro-title">MOVIEMIND</div>
+    <div id="intro-sub">AI · Genre Detection · Machine Learning</div>
+  </div>
+
+  <section id="landing">
+    <span class="float-el">🎬</span>
+    <span class="float-el">🔫</span>
+    <span class="float-el">💕</span>
+    <span class="float-el">👻</span>
+    <span class="float-el">🚀</span>
+    <span class="float-el">🕵️</span>
+
+    <a class="l-logo" href="/">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <defs>
+          <linearGradient id="lg1" x1="0" y1="0" x2="30" y2="30">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#EC4899"/>
+          </linearGradient>
+        </defs>
+        <circle cx="15" cy="15" r="13" stroke="url(#lg1)" stroke-width="2"/>
+        <circle cx="15" cy="15" r="7"  stroke="url(#lg1)" stroke-width="1.5"/>
+        <circle cx="15" cy="15" r="3"  fill="url(#lg1)"/>
+        <polygon points="13,11 13,19 21,15" fill="#EC4899"/>
+      </svg>
+      <span class="l-logo-text">MOVIEMIND</span>
+    </a>
+
+    <div class="hero">
+      <div class="hero-eyebrow">🎬 AI Powered Genre Detection</div>
+      <h1 class="hero-title">MOVIEMIND</h1>
+      <p class="hero-tagline">"Predict the Soul of Every Story"</p>
+      <p class="hero-desc">
+        MovieMind uses machine learning to analyse movie plot summaries
+        and predict their genre instantly — trained on 54,000+ real movie plots
+        across 27 different genres.
+      </p>
+      <a href="/login" class="hero-btn">
+        Start Predicting
+        <span class="btn-arr">→</span>
+      </a>
+    </div>
+
+    <div class="steps-section">
+      <p class="steps-label">How It Works</p>
+      <h2 class="steps-title">3 Simple Steps</h2>
+      <p class="steps-sub">
+        From a movie plot to a genre prediction in milliseconds —
+        here's exactly how MovieMind works.
+      </p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num">01</span>
+          <span class="step-icon">📝</span>
+          <div class="step-title">Paste Your Plot</div>
+          <p class="step-desc">
+            Type or paste any movie plot summary into the prediction box.
+            The longer the plot, the more accurate the prediction.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num">02</span>
+          <span class="step-icon">🤖</span>
+          <div class="step-title">AI Analyses It</div>
+          <p class="step-desc">
+            A trained ML model processes the text and predicts
+            the most likely genre with confidence scores.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num">03</span>
+          <span class="step-icon">🎭</span>
+          <div class="step-title">Get Your Genre</div>
+          <p class="step-desc">
+            See the top 3 predicted genres with confidence scores,
+            key trigger words, and famous movies of that genre.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="l-footer">
+      Built with Python · Flask · Scikit-learn
+    </div>
+  </section>
+
+  <script>
+    const cur  = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cur.style.left = mx+'px'; cur.style.top = my+'px';
+    });
+    (function loop(){
+      rx += (mx-rx)*.12; ry += (my-ry)*.12;
+      ring.style.left = rx+'px'; ring.style.top = ry+'px';
+      requestAnimationFrame(loop);
+    })();
+
+    document.querySelectorAll('button,a,.step-card').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{
+        cur.style.width='24px';cur.style.height='24px';
+        ring.style.width='56px';ring.style.height='56px';
+      });
+      el.addEventListener('mouseleave',()=>{
+        cur.style.width='14px';cur.style.height='14px';
+        ring.style.width='36px';ring.style.height='36px';
+      });
+    });
+
+    setTimeout(()=>{
+      const intro  = document.getElementById('intro');
+      const colors = ['#fff','#FBBF24','#EC4899','#F97316','#7C3AED'];
+      for(let i=0;i<28;i++){
+        const p     = document.createElement('div');
+        const angle = (i/28)*360;
+        const dist  = 90+Math.random()*90;
+        const rad   = (angle*Math.PI)/180;
+        const tx    = Math.cos(rad)*dist;
+        const ty    = Math.sin(rad)*dist;
+        const size  = 5+Math.random()*7;
+        const color = colors[Math.floor(Math.random()*colors.length)];
+        p.style.cssText=`position:absolute;width:${size}px;height:${size}px;
+          background:${color};border-radius:50%;
+          left:calc(50% - ${size/2}px);top:calc(50% - ${size/2}px);
+          pointer-events:none;z-index:10;
+          animation:pfx .9s ease-out forwards;
+          --tx:${tx}px;--ty:${ty}px;`;
+        intro.appendChild(p);
+        setTimeout(()=>p.remove(),950);
+      }
+      if(!document.getElementById('pstyle')){
+        const s=document.createElement('style');
+        s.id='pstyle';
+        s.textContent=`@keyframes pfx{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.1)}}`;
+        document.head.appendChild(s);
+      }
+    },1500);
+
+    setTimeout(()=>{
+      const intro   = document.getElementById('intro');
+      const landing = document.getElementById('landing');
+      intro.classList.add('splitting');
+      setTimeout(()=>{
+        intro.style.display='none';
+        landing.classList.add('visible');
+      },780);
+    },3700);
+
+    const floaters = document.querySelectorAll('.float-el');
+    document.addEventListener('mousemove',e=>{
+      const cx=window.innerWidth/2, cy=window.innerHeight/2;
+      const dx=(e.clientX-cx)/cx,   dy=(e.clientY-cy)/cy;
+      floaters.forEach((el,i)=>{
+        const d=(i%3+1)*10;
+        el.style.transform=`translate(${dx*d}px,${dy*d}px)`;
+      });
+    });
+
+    document.addEventListener('touchmove',e=>{
+      const t=e.touches[0];
+      const cx=window.innerWidth/2, cy=window.innerHeight/2;
+      const dx=(t.clientX-cx)/cx,   dy=(t.clientY-cy)/cy;
+      floaters.forEach((el,i)=>{
+        const d=(i%3+1)*8;
+        el.style.transform=`translate(${dx*d}px,${dy*d}px)`;
+      });
+    },{passive:true});
+  </script>
+</body>
+</html>
