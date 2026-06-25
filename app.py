@@ -370,5 +370,7 @@ def api_me():
     return jsonify({"logged_in": False})
 
 if __name__ == "__main__":
-    print("[MovieMind] Running on http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", 5000))
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    print(f"[MovieMind] Running on http://0.0.0.0:{port}")
+    app.run(host="0.0.0.0", port=port, debug=debug)
