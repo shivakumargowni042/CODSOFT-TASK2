@@ -1,4 +1,5 @@
 # 🎬 MovieMind — AI Movie Genre Predictor
+DEMO LIVE LINK:-https://web-production-131ac.up.railway.app/
 
 MovieMind uses machine learning to analyse movie plot summaries and predict their genre instantly, trained on 54,000+ real movie plots across multiple genres.
 
